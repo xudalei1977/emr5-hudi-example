@@ -1,10 +1,10 @@
 package com.aws.analytics
 
 import com.aws.analytics.conf.Config
-import com.aws.analytics.util.{HudiConfig, Meta, SparkHelper, JsonSchema}
+import com.aws.analytics.util.SparkHelper
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.{DataFrame, Dataset, SaveMode}
-import org.apache.spark.sql.streaming.{StreamingQueryListener, Trigger}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.streaming.Trigger
 import org.slf4j.LoggerFactory
 
 
@@ -13,12 +13,10 @@ object MSK2Hudi {
   private val log = LoggerFactory.getLogger("MSK2Hudi")
 
   def main(args: Array[String]): Unit = {
-
     log.info(args.mkString)
     Logger.getLogger("org").setLevel(Level.WARN)
-    val parmas = Config.parseConfig(MSK2Hudi, args)
 
-    // init spark session
+    val parmas = Config.parseConfig(MSK2Hudi, args)
     implicit val spark = SparkHelper.getSparkSession(parmas.env)
 
     val df = spark
@@ -32,7 +30,7 @@ object MSK2Hudi {
 //      .option("maxOffsetsPerTrigger", "100")
 //      .option("kafka.consumer.commit.groupid", parmas.consumerGroup)
       .load()
-      .repartition(Integer.valueOf(parmas.partitionNum))
+      .repartition(parmas.partitionNum)
 
     val query = df.writeStream
       .queryName("MSK2Hudi")
